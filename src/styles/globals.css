@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Reset some default browser styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -17,6 +24,8 @@
 }
 
 body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
       to bottom,
@@ -25,3 +34,5 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+
