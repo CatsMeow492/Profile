@@ -1,37 +1,71 @@
+import { Navigation } from '@/components/navigation/Navigation';
+import { ScrollToTop } from '@/components/navigation/ScrollToTop';
+import { TestingChecklist } from '@/components/testing/TestingChecklist';
+import { TestingProvider } from '@/components/testing/TestingProvider';
+import { PerformanceDashboard } from '@/components/performance/PerformanceDashboard';
+import { PerformanceReport } from '@/components/performance/PerformanceReport';
+import { generateMetadata as generateSEOMetadata } from '@/lib/seo';
+import { SEOAudit } from '@/components/seo/SEOAudit';
+import { SEOReport } from '@/components/seo/SEOReport';
+import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
+import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider';
+import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard';
+import { FinalTestingSuite } from '@/components/testing/FinalTestingSuite';
+import { BrowserCompatibilityTest } from '@/components/testing/BrowserCompatibilityTest';
+import { AccessibilityTest } from '@/components/testing/AccessibilityTest';
+import { DeploymentChecklist } from '@/components/deployment/DeploymentChecklist';
+
+export const metadata = generateSEOMetadata();
+
 export default function SiteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
-      {/* Navigation will be added here */}
-      <nav className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="font-bold text-xl">Taylor Mohney</div>
-            <div className="hidden md:flex space-x-8">
-              <a href="#experience" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Experience</a>
-              <a href="#research" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Research</a>
-              <a href="#certifications" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Certifications</a>
-              <a href="#projects" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Projects</a>
-              <a href="#contact" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Contact</a>
-            </div>
-          </div>
-        </div>
-      </nav>
+    <>
+      {/* Google Analytics */}
+      <GoogleAnalytics />
+      
+      <AnalyticsProvider>
+        <TestingProvider>
+          <div className="min-h-screen bg-background text-foreground">
+            {/* Enhanced Navigation */}
+            <Navigation />
 
-      {/* Main content */}
-      <main>{children}</main>
+            {/* Main content */}
+            <main className="w-full">{children}</main>
 
-      {/* Footer */}
-      <footer className="bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-gray-600 dark:text-gray-400">
-            <p>&copy; {new Date().getFullYear()} Taylor Mohney. All rights reserved.</p>
+            {/* Footer */}
+            <footer className="bg-muted border-t border-border">
+              <div className="container mx-auto py-8">
+                <div className="text-center text-muted-foreground">
+                  <p>&copy; {new Date().getFullYear()} Taylor Mohney. All rights reserved.</p>
+                </div>
+              </div>
+            </footer>
+
+            {/* Scroll to Top Button */}
+            <ScrollToTop />
+            
+            {/* Development Tools - Only show in development */}
+            {process.env.NODE_ENV === 'development' && (
+              <>
+                <TestingChecklist />
+                <PerformanceDashboard />
+                <PerformanceReport />
+                <SEOAudit />
+                <SEOReport />
+                <AnalyticsDashboard />
+                <FinalTestingSuite />
+                <BrowserCompatibilityTest />
+                <AccessibilityTest />
+                <DeploymentChecklist />
+              </>
+            )}
           </div>
-        </div>
-      </footer>
-    </div>
+        </TestingProvider>
+      </AnalyticsProvider>
+    </>
   );
 } 
