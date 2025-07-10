@@ -322,64 +322,82 @@ const ResearchNetwork3D = ({
       });
     });
 
-    // 3. Calculate meaningful connections between papers
-    research.forEach((paper, paperIndex) => {
-      research.forEach((otherPaper, otherIndex) => {
-        if (paperIndex >= otherIndex) return; // Avoid duplicate connections
-        
-        let connectionStrength = 0;
-        let connectionType = '';
-        
-        // Same author connection (strongest)
-        const sharedAuthors = paper.authors.filter(author => 
-          otherPaper.authors.includes(author)
-        ).length;
-        if (sharedAuthors > 0) {
-          connectionStrength += sharedAuthors * 3;
-          connectionType = 'author';
-        }
-        
-        // Keyword similarity connection
-        const sharedKeywords = paper.keywords.filter(keyword => 
-          otherPaper.keywords.includes(keyword)
-        ).length;
-        if (sharedKeywords > 0) {
-          connectionStrength += sharedKeywords * 2;
-          if (!connectionType) connectionType = 'semantic';
-        }
-        
-        // Same category connection (medium)
-        if (paper.category === otherPaper.category) {
-          connectionStrength += 1.5;
-          if (!connectionType) connectionType = 'category';
-        }
-        
-        // Temporal proximity connection (weaker)
-        const yearDiff = Math.abs(paper.year - otherPaper.year);
-        if (yearDiff <= 1) {
-          connectionStrength += 1;
-          if (!connectionType) connectionType = 'temporal';
-        }
-        
-        // Sequential research connection (research evolution)
-        if (yearDiff === 1 && sharedKeywords > 1) {
-          connectionStrength += 2;
-          connectionType = 'evolution';
-        }
-        
-        // Only create connection if there's meaningful relationship
-        if (connectionStrength > 1.5) {
-          connections.push({
-            from: paperIndex,
-            to: otherIndex,
-            strength: Math.min(connectionStrength, 6), // Cap at 6 for visual clarity
-            type: connectionType
-          });
-        }
-      });
-    });
+         // 3. Calculate meaningful connections between papers
+     research.forEach((paper, paperIndex) => {
+       research.forEach((otherPaper, otherIndex) => {
+         if (paperIndex >= otherIndex) return; // Avoid duplicate connections
+         
+         // Calculate different types of relationships and their strengths
+         const relationships = {
+           author: 0,
+           semantic: 0,
+           evolution: 0,
+           category: 0,
+           temporal: 0
+         };
+         
+         // Sequential research connection (research evolution) - STRONGEST
+         const yearDiff = Math.abs(paper.year - otherPaper.year);
+         const sharedKeywords = paper.keywords.filter(keyword => 
+           otherPaper.keywords.includes(keyword)
+         ).length;
+         if (yearDiff === 1 && sharedKeywords > 1) {
+           relationships.evolution = 5; // Strongest connection type
+         }
+         
+         // Keyword similarity connection - STRONG
+         if (sharedKeywords > 0) {
+           relationships.semantic = sharedKeywords * 2.5;
+         }
+         
+         // Same category connection - MEDIUM
+         if (paper.category === otherPaper.category) {
+           relationships.category = 2;
+         }
+         
+         // Temporal proximity connection - WEAK
+         if (yearDiff <= 1) {
+           relationships.temporal = 1.5;
+         }
+         
+         // Same author connection - WEAKEST
+         const sharedAuthors = paper.authors.filter(author => 
+           otherPaper.authors.includes(author)
+         ).length;
+         if (sharedAuthors > 0) {
+           relationships.author = sharedAuthors * 1; // Weakest connection type
+         }
+         
+         // Find the strongest relationship type
+         const maxRelationship = Math.max(...Object.values(relationships));
+         const strongestType = Object.entries(relationships).find(([_, strength]) => strength === maxRelationship)?.[0] || '';
+         
+         // Calculate total connection strength
+         const totalStrength = Object.values(relationships).reduce((sum, val) => sum + val, 0);
+         
+         // Only create connection if there's meaningful relationship
+         if (totalStrength > 1.0 && strongestType) {
+           connections.push({
+             from: paperIndex,
+             to: otherIndex,
+             strength: Math.min(totalStrength, 6), // Cap at 6 for visual clarity
+             type: strongestType
+           });
+         }
+       });
+     });
 
-    return { positions, connections };
+         // Debug: Log connection types for verification
+     if (typeof window !== 'undefined') {
+       const connectionTypes = connections.reduce((acc, conn) => {
+         acc[conn.type] = (acc[conn.type] || 0) + 1;
+         return acc;
+       }, {} as Record<string, number>);
+       console.log('Connection types created:', connectionTypes);
+       console.log('Total connections:', connections.length);
+     }
+
+     return { positions, connections };
   }, []);
 
   // Get connection color based on type
@@ -703,11 +721,41 @@ export const ResearchSection = () => {
   const [selectedPaper, setSelectedPaper] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'3d' | 'timeline' | 'grid'>('3d');
   const [showAssistant, setShowAssistant] = useState(false);
+  const [isResearchSectionVisible, setIsResearchSectionVisible] = useState(false);
   const [achievements, setAchievements] = useState({
     networkExplorer: false,
     formulaMaster: false,
     timelineNavigator: false
   });
+
+  const researchSectionRef = useRef<HTMLDivElement>(null);
+
+  // Intersection Observer to detect when research section is visible
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        setIsResearchSectionVisible(entry.isIntersecting && entry.intersectionRatio > 0.3);
+      },
+      {
+        threshold: [0, 0.3, 0.7, 1],
+        rootMargin: '-50px 0px -50px 0px'
+      }
+    );
+
+    if (researchSectionRef.current) {
+      observer.observe(researchSectionRef.current);
+    }
+
+    return () => {
+      if (researchSectionRef.current) {
+        observer.unobserve(researchSectionRef.current);
+      }
+    };
+  }, []);
+
+  // Determine if legend should be visible
+  const shouldShowLegend = isResearchSectionVisible && viewMode === '3d';
 
   const selectedPaperData = selectedPaper ? research.find(p => p.id === selectedPaper) || null : null;
 
@@ -727,8 +775,13 @@ export const ResearchSection = () => {
   };
 
   return (
-    <Section id="research" title="Research & Publications" className="min-h-screen bg-gradient-to-br from-background via-background/90 to-primary/5">
-      <div className="space-y-8">
+    <div ref={researchSectionRef}>
+      <Section 
+        id="research" 
+        title="Research & Publications" 
+        className="min-h-screen bg-gradient-to-br from-background via-background/90 to-primary/5"
+      >
+        <div className="space-y-8">
         {/* Research Metrics Dashboard */}
         <ResearchMetrics />
 
@@ -759,48 +812,53 @@ export const ResearchSection = () => {
           </div>
         </motion.div>
 
-        {/* Connection Legend for 3D View */}
-        {viewMode === '3d' && (
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="fixed left-4 top-1/2 -translate-y-1/2 bg-card/95 backdrop-blur-md border border-border rounded-xl p-4 z-40 w-64"
-          >
-            <h3 className="font-semibold text-sm mb-3">Network Connections</h3>
-            <div className="space-y-2 text-xs">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-0.5 bg-green-500 rounded"></div>
-                <span>Same Author</span>
+        {/* Connection Legend for 3D View - Only show when viewing Research section */}
+        <AnimatePresence>
+          {shouldShowLegend && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="fixed left-4 top-20 bg-card/95 backdrop-blur-md border border-border rounded-xl p-4 z-40 w-64"
+            >
+              <div className="mb-3">
+                <h3 className="font-semibold text-sm">Network Connections</h3>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-0.5 bg-blue-500 rounded"></div>
-                <span>Shared Keywords</span>
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-0.5 bg-purple-500 rounded"></div>
+                  <span>Research Evolution <span className="text-purple-400">(Strongest)</span></span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-0.5 bg-blue-500 rounded"></div>
+                  <span>Shared Keywords <span className="text-blue-400">(Strong)</span></span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-0.5 bg-orange-500 rounded"></div>
+                  <span>Same Category <span className="text-orange-400">(Medium)</span></span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-0.5 bg-gray-400 rounded"></div>
+                  <span>Temporal Proximity <span className="text-gray-400">(Weak)</span></span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-0.5 bg-green-500 rounded"></div>
+                  <span>Same Author <span className="text-green-400">(Weakest)</span></span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-0.5 bg-purple-500 rounded"></div>
-                <span>Research Evolution</span>
+              
+              <div className="mt-4 pt-3 border-t border-border">
+                <h4 className="font-medium text-xs mb-2">Graph Organization</h4>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li>• Categories clustered spatially</li>
+                  <li>• Years organized vertically</li>
+                  <li>• Connections show relationships</li>
+                  <li>• Node size = research impact</li>
+                </ul>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-0.5 bg-orange-500 rounded"></div>
-                <span>Same Category</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-0.5 bg-gray-400 rounded"></div>
-                <span>Temporal Proximity</span>
-              </div>
-            </div>
-            
-            <div className="mt-4 pt-3 border-t border-border">
-              <h4 className="font-medium text-xs mb-2">Graph Organization</h4>
-              <ul className="text-xs text-muted-foreground space-y-1">
-                <li>• Categories clustered spatially</li>
-                <li>• Years organized vertically</li>
-                <li>• Connections show relationships</li>
-                <li>• Node size = research impact</li>
-              </ul>
-            </div>
-          </motion.div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* AI Assistant Toggle */}
         <motion.button
@@ -808,8 +866,9 @@ export const ResearchSection = () => {
           className="fixed bottom-4 right-4 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-2xl hover:shadow-primary/25 transition-all duration-300 z-40 flex items-center justify-center"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
+          aria-label={showAssistant ? "Close AI Assistant" : "Open AI Assistant"}
         >
-          🤖
+          {showAssistant ? '✕' : '🤖'}
         </motion.button>
 
         {/* Achievement Notifications */}
@@ -1024,5 +1083,6 @@ export const ResearchSection = () => {
         </AnimatePresence>
       </div>
     </Section>
+    </div>
   );
 }; 

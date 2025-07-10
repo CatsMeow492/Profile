@@ -125,5 +125,29 @@
 4. **Hierarchical Layout**: Balanced positioning maintaining both categorical and temporal organization
 5. **Visual Encoding**: Color-coded connection types with opacity representing relationship strength
 
+#### 🔧 CRITICAL FIXES APPLIED: UI/UX and Algorithm Improvements
+**Legend Visibility Issue Resolution**:
+- ✅ **Conditional Legend Display**: Network connections legend now only appears when viewing Research section with 3D mode active
+- ✅ **Interactive Legend Toggle**: Added floating 📊 button in top-left corner to show/hide legend
+- ✅ **AnimatePresence Integration**: Smooth entry/exit animations for legend visibility
+- ✅ **Repositioned Legend**: Moved from center-screen to top-left to reduce visual obstruction
+- ✅ **Close Button**: Added ✕ button within legend for immediate dismissal
+
+**Connection Algorithm Enhancement**:
+- ✅ **Fixed Connection Type Logic**: Replaced first-match algorithm with strongest-relationship detection
+- ✅ **Multi-Factor Analysis**: Now properly evaluates all relationship types before determining primary connection
+- ✅ **Hierarchical Connection Strength System**: Implemented proper strength hierarchy:
+  - 🟣 **Research Evolution** (Strongest - 5.0): Sequential research with thematic continuity
+  - 🔵 **Semantic Keywords** (Strong - 2.5×): Shared keyword relationships
+  - 🟠 **Category Clustering** (Medium - 2.0): Same research domain clustering  
+  - ⚪ **Temporal Proximity** (Weak - 1.5): Same publication timeframe
+  - 🟢 **Same Author** (Weakest - 1.0×): Shared authorship relationships
+- ✅ **Debug Logging**: Added console logging to verify connection type diversity
+- ✅ **Strength-Based Prioritization**: Primary connection type determined by relationship strength rather than order of evaluation
+- ✅ **Automatic Legend Visibility**: Network connections legend now automatically appears when viewing Research section in 3D mode
+- ✅ **Scroll-Based Legend Management**: Legend automatically disappears when scrolling away from Research section or changing view modes
+- ✅ **Intersection Observer Integration**: Advanced scroll detection using intersection observer with threshold controls
+- ✅ **Updated Legend Hierarchy**: Legend now displays connection types in strength order with visual indicators
+
 ### Outstanding: Final Documentation
 **Step 20**: Final Documentation & Handoff (Create comprehensive project documentation) 
