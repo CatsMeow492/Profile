@@ -158,22 +158,35 @@ const ResearchNetworkNode = ({
   position, 
   isSelected, 
   onSelect,
-  connectionLines = []
+  connectionLines = [],
+  connectionStrength = 0
 }: {
   paper: Research;
   position: [number, number, number];
   isSelected: boolean;
   onSelect: () => void;
   connectionLines?: Array<[number, number, number]>;
+  connectionStrength?: number;
 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
   
   useFrame((state: any) => {
     if (meshRef.current) {
-      meshRef.current.rotation.y += 0.01;
+      // Gentle rotation based on connection strength
+      const rotationSpeed = 0.005 + (connectionStrength * 0.003);
+      meshRef.current.rotation.y += rotationSpeed;
+      
       if (isSelected) {
-        meshRef.current.scale.setScalar(Math.sin(state.clock.elapsedTime * 2) * 0.1 + 1.2);
+        // Pulsing effect for selected node
+        meshRef.current.scale.setScalar(Math.sin(state.clock.elapsedTime * 2) * 0.15 + 1.3);
+      } else if (hovered) {
+        // Gentle hover effect
+        meshRef.current.scale.setScalar(Math.sin(state.clock.elapsedTime * 4) * 0.05 + 1.1);
+      } else {
+        // Subtle breathing effect based on connection strength
+        const breathingIntensity = 0.02 + (connectionStrength * 0.01);
+        meshRef.current.scale.setScalar(Math.sin(state.clock.elapsedTime * 1.5) * breathingIntensity + 1.0);
       }
     }
   });
@@ -188,11 +201,26 @@ const ResearchNetworkNode = ({
     }
   };
 
+  // Calculate node size based on research impact and connections
+  const getNodeSize = () => {
+    const baseSize = 0.4;
+    const connectionBonus = Math.min(connectionStrength * 0.1, 0.3);
+    const yearBonus = (paper.year >= 2023) ? 0.1 : 0; // Recent research bonus
+    const statusBonus = paper.status === 'published' ? 0.1 : 0;
+    
+    let finalSize = baseSize + connectionBonus + yearBonus + statusBonus;
+    
+    if (isSelected) finalSize *= 1.6;
+    else if (hovered) finalSize *= 1.3;
+    
+    return finalSize;
+  };
+
   return (
     <group position={position}>
       <Sphere
         ref={meshRef}
-        args={[isSelected ? 0.8 : 0.5, 32, 32]}
+        args={[getNodeSize(), 32, 32]}
         onClick={onSelect}
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
@@ -243,53 +271,216 @@ const ResearchNetwork3D = ({
   selectedPaper: string | null; 
   onPaperSelect: (id: string) => void; 
 }) => {
-  const positions = useMemo(() => {
-    return research.map((_, index) => {
-      const angle = (index / research.length) * Math.PI * 2;
-      const radius = 5;
-      return [
-        Math.cos(angle) * radius + (Math.random() - 0.5) * 2,
-        (Math.random() - 0.5) * 4,
-        Math.sin(angle) * radius + (Math.random() - 0.5) * 2
-      ] as [number, number, number];
+  // Create hierarchical graph layout based on research themes and temporal relationships
+  const { positions, connections } = useMemo(() => {
+    // 1. Group papers by category for clustering
+    const categories = Array.from(new Set(research.map(p => p.category)));
+    const categoryGroups = categories.reduce((acc, category) => {
+      acc[category] = research.filter(p => p.category === category);
+      return acc;
+    }, {} as Record<string, typeof research>);
+
+    // 2. Create hierarchical positions
+    const positions: Array<[number, number, number]> = [];
+    const connections: Array<{ from: number; to: number; strength: number; type: string }> = [];
+
+    // Calculate positions for each category cluster
+    categories.forEach((category, categoryIndex) => {
+      const categoryAngle = (categoryIndex / categories.length) * Math.PI * 2;
+      const categoryRadius = 8; // Distance from center for each category
+      const categoryCenter = [
+        Math.cos(categoryAngle) * categoryRadius,
+        0,
+        Math.sin(categoryAngle) * categoryRadius
+      ];
+
+      const papersInCategory = categoryGroups[category];
+      
+      // Position papers within each category cluster
+      papersInCategory.forEach((paper, paperIndex) => {
+        const paperCount = papersInCategory.length;
+        
+        // Create sub-clustering within category based on year
+        const yearOffset = (paper.year - 2020) * 1.5; // Temporal hierarchy on Y-axis
+        
+        // Create circular arrangement within category
+        const localAngle = paperCount > 1 ? (paperIndex / paperCount) * Math.PI * 2 : 0;
+        const localRadius = Math.min(2.5, paperCount * 0.4); // Adaptive radius based on paper count
+        
+        const localX = Math.cos(localAngle) * localRadius;
+        const localZ = Math.sin(localAngle) * localRadius;
+        
+        // Add some slight randomization for natural look
+        const jitter = 0.3;
+        const position: [number, number, number] = [
+          categoryCenter[0] + localX + (Math.random() - 0.5) * jitter,
+          yearOffset + (Math.random() - 0.5) * jitter,
+          categoryCenter[2] + localZ + (Math.random() - 0.5) * jitter
+        ];
+        
+        positions.push(position);
+      });
     });
+
+    // 3. Calculate meaningful connections between papers
+    research.forEach((paper, paperIndex) => {
+      research.forEach((otherPaper, otherIndex) => {
+        if (paperIndex >= otherIndex) return; // Avoid duplicate connections
+        
+        let connectionStrength = 0;
+        let connectionType = '';
+        
+        // Same author connection (strongest)
+        const sharedAuthors = paper.authors.filter(author => 
+          otherPaper.authors.includes(author)
+        ).length;
+        if (sharedAuthors > 0) {
+          connectionStrength += sharedAuthors * 3;
+          connectionType = 'author';
+        }
+        
+        // Keyword similarity connection
+        const sharedKeywords = paper.keywords.filter(keyword => 
+          otherPaper.keywords.includes(keyword)
+        ).length;
+        if (sharedKeywords > 0) {
+          connectionStrength += sharedKeywords * 2;
+          if (!connectionType) connectionType = 'semantic';
+        }
+        
+        // Same category connection (medium)
+        if (paper.category === otherPaper.category) {
+          connectionStrength += 1.5;
+          if (!connectionType) connectionType = 'category';
+        }
+        
+        // Temporal proximity connection (weaker)
+        const yearDiff = Math.abs(paper.year - otherPaper.year);
+        if (yearDiff <= 1) {
+          connectionStrength += 1;
+          if (!connectionType) connectionType = 'temporal';
+        }
+        
+        // Sequential research connection (research evolution)
+        if (yearDiff === 1 && sharedKeywords > 1) {
+          connectionStrength += 2;
+          connectionType = 'evolution';
+        }
+        
+        // Only create connection if there's meaningful relationship
+        if (connectionStrength > 1.5) {
+          connections.push({
+            from: paperIndex,
+            to: otherIndex,
+            strength: Math.min(connectionStrength, 6), // Cap at 6 for visual clarity
+            type: connectionType
+          });
+        }
+      });
+    });
+
+    return { positions, connections };
   }, []);
+
+  // Get connection color based on type
+  const getConnectionColor = (type: string, strength: number) => {
+    const opacity = Math.min(strength / 6, 0.8);
+    switch (type) {
+      case 'author': return `rgba(34, 197, 94, ${opacity})`; // Green for same author
+      case 'semantic': return `rgba(59, 130, 246, ${opacity})`; // Blue for keyword similarity
+      case 'evolution': return `rgba(168, 85, 247, ${opacity})`; // Purple for research evolution
+      case 'category': return `rgba(245, 158, 11, ${opacity})`; // Orange for same category
+      case 'temporal': return `rgba(156, 163, 175, ${opacity})`; // Gray for temporal proximity
+      default: return `rgba(255, 255, 255, ${opacity})`;
+    }
+  };
 
   return (
     <>
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} intensity={1} />
-      <spotLight position={[0, 20, 0]} intensity={0.8} />
+      <ambientLight intensity={0.6} />
+      <pointLight position={[15, 15, 15]} intensity={0.8} />
+      <pointLight position={[-15, 10, -15]} intensity={0.4} />
+      <spotLight position={[0, 25, 0]} intensity={0.6} />
       
-      {research.map((paper, index) => {
-        const connectionLines = research
-          .filter((other, otherIndex) => 
-            otherIndex !== index && 
-            paper.keywords.some(k => other.keywords.includes(k))
-          )
-          .map((_, otherIndex) => {
-            const connectedIndex = research.findIndex(p => 
-              p.keywords.some(k => paper.keywords.includes(k)) && p.id !== paper.id
-            );
-            if (connectedIndex >= 0) {
-              return [
-                positions[connectedIndex][0] - positions[index][0],
-                positions[connectedIndex][1] - positions[index][1],
-                positions[connectedIndex][2] - positions[index][2]
-              ] as [number, number, number];
-            }
-            return [0, 0, 0] as [number, number, number];
-          });
-
+      {/* Render connection lines */}
+      {connections.map((connection, index) => {
+        const fromPos = positions[connection.from];
+        const toPos = positions[connection.to];
+        
+        if (!fromPos || !toPos) return null;
+        
+        const isHighlighted = selectedPaper && (
+          research[connection.from]?.id === selectedPaper ||
+          research[connection.to]?.id === selectedPaper
+        );
+        
         return (
-          <ResearchNetworkNode
-            key={paper.id}
-            paper={paper}
-            position={positions[index]}
-            isSelected={selectedPaper === paper.id}
-            onSelect={() => onPaperSelect(paper.id)}
-            connectionLines={connectionLines.slice(0, 3)}
+          <Line
+            key={`connection-${index}`}
+            points={[fromPos, toPos]}
+            color={getConnectionColor(connection.type, connection.strength)}
+            lineWidth={isHighlighted ? connection.strength * 1.5 : connection.strength * 0.8}
+            transparent
           />
+        );
+      })}
+      
+             {/* Render research paper nodes */}
+       {research.map((paper, index) => {
+         // Get connections for this specific paper
+         const paperConnectionData = connections.filter(conn => conn.from === index || conn.to === index);
+         const paperConnections = paperConnectionData
+           .map(conn => {
+             const otherIndex = conn.from === index ? conn.to : conn.from;
+             const otherPos = positions[otherIndex];
+             const currentPos = positions[index];
+             
+             return [
+               otherPos[0] - currentPos[0],
+               otherPos[1] - currentPos[1],
+               otherPos[2] - currentPos[2]
+             ] as [number, number, number];
+           })
+           .slice(0, 5); // Limit to 5 strongest connections per node
+         
+         // Calculate total connection strength for this node
+         const totalConnectionStrength = paperConnectionData
+           .reduce((sum, conn) => sum + conn.strength, 0) / Math.max(paperConnectionData.length, 1);
+
+         return (
+           <ResearchNetworkNode
+             key={paper.id}
+             paper={paper}
+             position={positions[index]}
+             isSelected={selectedPaper === paper.id}
+             onSelect={() => onPaperSelect(paper.id)}
+             connectionLines={paperConnections}
+             connectionStrength={totalConnectionStrength}
+           />
+         );
+       })}
+      
+      {/* Category labels in 3D space */}
+      {Array.from(new Set(research.map(p => p.category))).map((category, index) => {
+        const categoryAngle = (index / Array.from(new Set(research.map(p => p.category))).length) * Math.PI * 2;
+        const categoryRadius = 12;
+        const labelPosition: [number, number, number] = [
+          Math.cos(categoryAngle) * categoryRadius,
+          -3,
+          Math.sin(categoryAngle) * categoryRadius
+        ];
+        
+        return (
+          <Text
+            key={`label-${category}`}
+            position={labelPosition}
+            fontSize={0.8}
+            color="#888888"
+            anchorX="center"
+            anchorY="middle"
+          >
+            {category.replace('-', ' ').toUpperCase()}
+          </Text>
         );
       })}
       
@@ -298,7 +489,9 @@ const ResearchNetwork3D = ({
         enableZoom={true} 
         enableRotate={true}
         autoRotate={true}
-        autoRotateSpeed={0.5}
+        autoRotateSpeed={0.3}
+        maxDistance={30}
+        minDistance={5}
       />
     </>
   );
@@ -565,6 +758,49 @@ export const ResearchSection = () => {
             ))}
           </div>
         </motion.div>
+
+        {/* Connection Legend for 3D View */}
+        {viewMode === '3d' && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="fixed left-4 top-1/2 -translate-y-1/2 bg-card/95 backdrop-blur-md border border-border rounded-xl p-4 z-40 w-64"
+          >
+            <h3 className="font-semibold text-sm mb-3">Network Connections</h3>
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-0.5 bg-green-500 rounded"></div>
+                <span>Same Author</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-0.5 bg-blue-500 rounded"></div>
+                <span>Shared Keywords</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-0.5 bg-purple-500 rounded"></div>
+                <span>Research Evolution</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-0.5 bg-orange-500 rounded"></div>
+                <span>Same Category</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-0.5 bg-gray-400 rounded"></div>
+                <span>Temporal Proximity</span>
+              </div>
+            </div>
+            
+            <div className="mt-4 pt-3 border-t border-border">
+              <h4 className="font-medium text-xs mb-2">Graph Organization</h4>
+              <ul className="text-xs text-muted-foreground space-y-1">
+                <li>• Categories clustered spatially</li>
+                <li>• Years organized vertically</li>
+                <li>• Connections show relationships</li>
+                <li>• Node size = research impact</li>
+              </ul>
+            </div>
+          </motion.div>
+        )}
 
         {/* AI Assistant Toggle */}
         <motion.button
