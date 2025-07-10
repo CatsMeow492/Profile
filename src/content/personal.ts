@@ -2,20 +2,19 @@ import { PersonalInfo } from '@/types/content';
 
 export const personalInfo: PersonalInfo = {
   name: 'Taylor Mohney',
-  title: 'Software Engineer & Researcher',
-  tagline: 'Building modern applications and conducting research in quantization theory and machine learning optimization',
-  bio: `Passionate software engineer and researcher specializing in machine learning optimization, 
-        quantization theory, and modern web development. I bridge the gap between theoretical research 
-        and practical applications, with expertise in both cutting-edge ML algorithms and scalable 
-        software architecture.`,
-  location: 'United States',
-  email: 'contact@youngmohney.com',
+  title: 'Senior Software Engineer',
+  tagline: 'Building high-performance applications with 10+ years of experience in TypeScript, Python, and Go',
+  bio: `Senior Software Engineer with 10+ years designing and shipping high-performance GraphQL and REST APIs 
+        in TypeScript, Python, and Go. Deep experience with Docker, Kubernetes, and cloud platforms (AWS & GCP); 
+        strong in microservices architecture, CI/CD, test-driven development, and agile delivery. Skilled at 
+        integrating machine-learning pipelines and championing code quality, scalability, and cross-team collaboration.`,
+  location: 'Las Vegas, Nevada, United States',
+  email: 'TaylorMohney@icloud.com',
+  phone: '702-376-4552',
   website: 'https://youngmohney.com',
   socialLinks: {
     linkedin: 'https://linkedin.com/in/taylormohney',
     github: 'https://github.com/CatsMeow492',
-    scholar: 'https://scholar.google.com/citations?user=example',
-    orcid: 'https://orcid.org/0000-0000-0000-0000',
   },
   resumeUrl: '/cv.pdf',
 }; 

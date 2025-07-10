@@ -2,6 +2,27 @@ import { Project } from '@/types/content';
 
 export const projects: Project[] = [
   {
+    id: 'brandbeacon-demo',
+    name: 'BrandBeacon Platform Demo',
+    description: 'Interactive demo showcasing brand marketing and customer engagement platform capabilities',
+    longDescription: `A comprehensive web application demo demonstrating modern brand marketing and customer engagement 
+                      platform features. The demo showcases real-time analytics, campaign management, user targeting, 
+                      and engagement tracking capabilities. Built with modern web technologies to provide an interactive 
+                      experience for potential clients and stakeholders to explore platform functionality.`,
+    technologies: ['React', 'Next.js', 'TypeScript', 'Tailwind CSS', 'Chart.js', 'WebSocket', 'Node.js', 'Express'],
+    liveUrl: 'https://www.brandbeacon.dev/',
+    startDate: '2024-01',
+    status: 'completed',
+    featured: true,
+    category: 'web-app',
+    achievements: [
+      'Interactive platform demonstration with real-time data visualization',
+      'Responsive design optimized for multiple device types and screen sizes',
+      'Live analytics dashboard showcasing campaign performance metrics',
+      'User-friendly interface designed for marketing professionals and decision makers'
+    ]
+  },
+  {
     id: 'llm-quantization-bounds',
     name: 'LLM Quantization Bounds Research',
     description: 'Theoretical analysis of quantization error bounds in LoRA fine-tuning with comprehensive experiments',
