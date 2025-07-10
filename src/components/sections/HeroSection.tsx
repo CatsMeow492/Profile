@@ -30,7 +30,7 @@ const HeroStats = () => {
 };
 
 const TechBadges = () => {
-  const techs = ['TypeScript', 'Python', 'Go', 'React', 'AWS', 'Blockchain'];
+  const techs = ['TypeScript', 'Python', 'Go', 'React', 'AWS', 'Machine Learning'];
   
   return (
     <div className="flex flex-wrap gap-3 mt-8">
