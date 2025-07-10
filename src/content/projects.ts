@@ -2,6 +2,28 @@ import { Project } from '@/types/content';
 
 export const projects: Project[] = [
   {
+    id: 'artifex-ai',
+    name: 'Artifex AI',
+    description: 'World\'s first robotics as a service company democratizing custom robotics solutions for small businesses',
+    longDescription: `Artifex AI is the world's first robotics as a service (RaaS) company that democratizes robotics by using artificial intelligence 
+                      to allow small businesses and creators to design their own custom robotics solutions. The platform leverages advanced AI 
+                      to simplify robot design, build, and deployment processes, making sophisticated robotics accessible to businesses that 
+                      previously couldn't afford custom automation solutions. This revolutionary approach eliminates traditional barriers 
+                      to robotics adoption through an intuitive, AI-powered design interface.`,
+    technologies: ['Artificial Intelligence', 'Robotics', 'Machine Learning', 'Computer Vision', 'Cloud Computing', 'Python', 'ROS', 'TensorFlow'],
+    liveUrl: 'https://artifexai.tech/',
+    startDate: '2023-01',
+    status: 'completed',
+    featured: true,
+    category: 'web-app',
+    achievements: [
+      'Top 5% performance in Y Combinator accelerator program',
+      'First-to-market robotics as a service platform for small businesses',
+      'Democratized access to custom robotics solutions through AI-powered design tools',
+      'Enabled small businesses and creators to deploy custom automation without traditional barriers'
+    ]
+  },
+  {
     id: 'brandbeacon-demo',
     name: 'BrandBeacon Platform Demo',
     description: 'Interactive demo showcasing brand marketing and customer engagement platform capabilities',
