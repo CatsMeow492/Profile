@@ -2,6 +2,29 @@ import { Project } from '@/types/content';
 
 export const projects: Project[] = [
   {
+    id: 'adaptive-lora-rank-allocation',
+    name: 'Rethinking Adaptive Rank Allocation in LoRA',
+    description: 'Empirical study challenging adaptive rank allocation in LoRA fine-tuning',
+    longDescription: `A comprehensive empirical study that challenges the assumed superiority of adaptive rank allocation in Low-Rank Adaptation (LoRA) 
+                      fine-tuning. Through systematic evaluation of six different LoRA configurations across classification and language modeling tasks, 
+                      this research demonstrates that fixed-rank approaches consistently outperform adaptive methods while requiring significantly less 
+                      computational overhead. The study includes the first comprehensive analysis optimized for Apple Silicon MPS and provides 
+                      evidence-based guidelines for practical LoRA deployment in production environments.`,
+    technologies: ['Python', 'PyTorch', 'Transformers', 'LoRA', 'AdaLoRA', 'Apple Silicon MPS', 'Quantization'],
+    githubUrl: 'https://github.com/CatsMeow492/adaptive-lora-rank-allocation',
+    startDate: '2024-12',
+    status: 'completed',
+    featured: true,
+    category: 'research',
+    achievements: [
+      'Demonstrated fixed-rank LoRA outperforms adaptive methods (91.6% vs 88.8% accuracy)',
+      'Achieved 50% reduction in training time compared to adaptive approaches',
+      'Showed 24.8% memory reduction with 4-bit quantization and zero accuracy degradation',
+      'First comprehensive analysis optimized for Apple Silicon MPS backend',
+      'Published practical guidelines for production LoRA deployment'
+    ]
+  },
+  {
     id: 'artifex-ai',
     name: 'Artifex AI',
     description: 'World\'s first robotics as a service company democratizing custom robotics solutions for small businesses',

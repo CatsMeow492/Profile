@@ -2,11 +2,23 @@ import { Research } from '@/types/content';
 
 export const research: Research[] = [
   {
+    id: 'adaptive-lora-rank-allocation-2024',
+    title: 'Rethinking Adaptive Rank Allocation in LoRA: An Empirical Study of Fixed vs. Adaptive Parameter-Efficient Fine-Tuning',
+    authors: ['Taylor Mohney', 'Dorian Hryniewicki'],
+    venue: 'arXiv preprint',
+    year: 2025,
+    abstract: `Parameter-efficient fine-tuning methods like Low-Rank Adaptation (LoRA) have revolutionized large language model adaptation by reducing trainable parameters while maintaining performance. Recent advances in adaptive rank allocation, particularly AdaLoRA, claim to improve efficiency by dynamically adjusting ranks during training. However, our comprehensive empirical study challenges this assumption. We evaluate six different LoRA configurations across classification and language modeling tasks, comparing fixed-rank and adaptive approaches under various quantization schemes. Our results demonstrate that fixed-rank LoRA consistently outperforms adaptive methods, achieving 91.6% vs. 88.8% accuracy on SST-2 classification while requiring 50% less training time and fewer parameters. Additionally, we show that 4-bit quantization reduces memory usage by 24.8% with zero accuracy degradation. We provide the first comprehensive analysis optimized for Apple Silicon MPS, establishing practical guidelines for efficient LoRA deployment.`,
+    pdfUrl: 'https://github.com/CatsMeow492/adaptive-lora-rank-allocation/blob/master/manuscript.pdf',
+    category: 'machine-learning',
+    keywords: ['LoRA', 'adaptive rank allocation', 'parameter-efficient fine-tuning', 'quantization', 'large language models', 'Apple Silicon'],
+    status: 'preprint'
+  },
+  {
     id: 'quantization-bounds-lora-2024',
     title: 'Theoretical Analysis of Quantization Bounds in LoRA Fine-tuning: Error Propagation and Optimal Bit-width Selection',
     authors: ['Taylor Mohney'],
     venue: 'arXiv preprint',
-    year: 2024,
+    year: 2025,
     abstract: `We present a comprehensive theoretical analysis of quantization error bounds in Low-Rank Adaptation (LoRA) fine-tuning. 
                Our work establishes fundamental error bounds E[L(θ̂_q)] - L(θ*) ≤ Õ(√r/√N) + O(r·2^(-2b)σ_g²) and derives 
                an optimal bit-width selection rule b* ≥ ½log₂(r) + ½log₂(N) + C. Through systematic experiments on DialoGPT 
@@ -24,7 +36,7 @@ export const research: Research[] = [
     title: 'Adaptive LoRA Placement for Efficient Large Language Model Fine-tuning',
     authors: ['Taylor Mohney'],
     venue: 'arXiv preprint',
-    year: 2024,
+    year: 2025,
     abstract: `This paper introduces a novel approach to adaptive placement of Low-Rank Adaptation (LoRA) modules in large language models. 
                We develop algorithmic strategies for determining optimal layer positions for LoRA adapters based on gradient analysis 
                and activation patterns. Our method achieves superior parameter efficiency while maintaining or improving fine-tuning 

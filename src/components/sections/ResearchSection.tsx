@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Text, OrbitControls, Sphere, Box, Line, Html } from '@react-three/drei';
+import { Text, OrbitControls, Sphere, Line, Html, Float, GradientTexture, QuadraticBezierLine } from '@react-three/drei';
 import * as THREE from 'three';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { 
@@ -217,6 +217,7 @@ const ResearchNetworkNode = ({
   };
 
   return (
+    <Float speed={0.6} rotationIntensity={0.1} floatIntensity={0.15}>
     <group position={position}>
       <Sphere
         ref={meshRef}
@@ -230,10 +231,29 @@ const ResearchNetworkNode = ({
           emissive={isSelected ? getNodeColor(paper.status) : '#000000'}
           emissiveIntensity={isSelected ? 0.3 : 0}
           transparent
-          opacity={hovered ? 0.9 : 0.7}
-        />
+          opacity={hovered ? 0.9 : 0.75}
+        >
+          <GradientTexture
+            stops={[0, 0.6, 1]}
+            colors={["#1f2937", getNodeColor(paper.status), "#ffffff"]}
+            size={64}
+          />
+        </meshStandardMaterial>
       </Sphere>
-      
+
+      {(isSelected || hovered) && (
+        <mesh scale={[getNodeSize() * 1.5, getNodeSize() * 1.5, getNodeSize() * 1.5]}>
+          <sphereGeometry args={[1, 32, 32]} />
+          <meshBasicMaterial
+            color={getNodeColor(paper.status)}
+            transparent
+            opacity={isSelected ? 0.25 : 0.15}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+          />
+        </mesh>
+      )}
+
       {connectionLines.map((endPos, index) => (
         <Line
           key={index}
@@ -241,10 +261,10 @@ const ResearchNetworkNode = ({
           color="#ffffff"
           lineWidth={isSelected ? 3 : 1}
           transparent
-          opacity={0.3}
+          opacity={0.25}
         />
       ))}
-      
+
       {(hovered || isSelected) && (
         <Html distanceFactor={10}>
           <div className="bg-card/90 backdrop-blur-sm border border-border rounded-lg p-3 max-w-xs pointer-events-none">
@@ -261,6 +281,7 @@ const ResearchNetworkNode = ({
         </Html>
       )}
     </group>
+    </Float>
   );
 };
 
@@ -413,12 +434,82 @@ const ResearchNetwork3D = ({
     }
   };
 
+  const controlsRef = useRef<any>(null);
+
+  // Camera rig to focus on selected nodes
+  const CameraRig = () => {
+    const { camera } = useThree();
+    useFrame(() => {
+      const defaultPosition = new THREE.Vector3(0, 0, 15);
+      let targetPosition = defaultPosition.clone();
+      let orbitTarget = new THREE.Vector3(0, 0, 0);
+      if (selectedPaper) {
+        const selIndex = research.findIndex(r => r.id === selectedPaper);
+        const pos = positions[selIndex];
+        if (pos) {
+          const focus = new THREE.Vector3(pos[0], pos[1], pos[2]);
+          orbitTarget.lerp(focus, 0.1);
+          targetPosition = new THREE.Vector3(pos[0], pos[1] + 1.2, pos[2] + 6);
+        }
+      }
+      camera.position.lerp(targetPosition, 0.05);
+      if (controlsRef.current) {
+        const currentTarget = controlsRef.current.target as THREE.Vector3;
+        currentTarget.lerp(orbitTarget, 0.05);
+        controlsRef.current.update();
+      }
+    });
+    return null;
+  };
+
+  // Lightweight starfield to replace drei Stars for HMR stability
+  const StarField = () => {
+    const pointsRef = useRef<THREE.Points>(null);
+    const starPositions = useMemo(() => {
+      const count = 1200;
+      const positions = new Float32Array(count * 3);
+      for (let i = 0; i < count; i++) {
+        const r = 80 * Math.cbrt(Math.random());
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        const x = r * Math.sin(phi) * Math.cos(theta);
+        const y = r * Math.sin(phi) * Math.sin(theta);
+        const z = r * Math.cos(phi);
+        positions[i * 3] = x;
+        positions[i * 3 + 1] = y;
+        positions[i * 3 + 2] = z;
+      }
+      return positions;
+    }, []);
+
+    useFrame((state) => {
+      if (pointsRef.current) {
+        pointsRef.current.rotation.y += 0.0006;
+        pointsRef.current.rotation.x += 0.0002;
+      }
+    });
+
+    return (
+      <points ref={pointsRef}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" args={[starPositions, 3]} />
+        </bufferGeometry>
+        <pointsMaterial size={0.4} sizeAttenuation color="#cbd5e1" depthWrite={false} transparent opacity={0.9} />
+      </points>
+    );
+  };
+
   return (
     <>
+      {/* Scene background and atmosphere */}
+      <color attach="background" args={["#0b1220"]} />
+      <fog attach="fog" args={["#0b1220", 25, 70]} />
       <ambientLight intensity={0.6} />
       <pointLight position={[15, 15, 15]} intensity={0.8} />
       <pointLight position={[-15, 10, -15]} intensity={0.4} />
       <spotLight position={[0, 25, 0]} intensity={0.6} />
+      <StarField />
+      <CameraRig />
       
       {/* Render connection lines */}
       {connections.map((connection, index) => {
@@ -427,18 +518,26 @@ const ResearchNetwork3D = ({
         
         if (!fromPos || !toPos) return null;
         
-        const isHighlighted = selectedPaper && (
+        const isHighlighted = !!selectedPaper && (
           research[connection.from]?.id === selectedPaper ||
           research[connection.to]?.id === selectedPaper
         );
-        
+        // Compute a curved mid-point elevated based on strength
+        const mid = [
+          (fromPos[0] + toPos[0]) / 2,
+          (fromPos[1] + toPos[1]) / 2 + Math.min(3, 0.3 * connection.strength),
+          (fromPos[2] + toPos[2]) / 2
+        ] as [number, number, number];
+
         return (
-          <Line
+          <AnimatedBezier
             key={`connection-${index}`}
-            points={[fromPos, toPos]}
+            start={fromPos}
+            mid={mid}
+            end={toPos}
             color={getConnectionColor(connection.type, connection.strength)}
-            lineWidth={isHighlighted ? connection.strength * 1.5 : connection.strength * 0.8}
-            transparent
+            width={isHighlighted ? Math.max(1.2, connection.strength * 0.18) : Math.max(0.6, connection.strength * 0.12)}
+            dashed={isHighlighted}
           />
         );
       })}
@@ -503,15 +602,59 @@ const ResearchNetwork3D = ({
       })}
       
       <OrbitControls 
+        ref={controlsRef}
         enablePan={true} 
         enableZoom={true} 
         enableRotate={true}
-        autoRotate={true}
+        enableDamping={true}
+        dampingFactor={0.08}
+        autoRotate={!selectedPaper}
         autoRotateSpeed={0.3}
         maxDistance={30}
         minDistance={5}
       />
     </>
+  );
+};
+
+// Animated curved connection using QuadraticBezierLine with dash animation when highlighted
+const AnimatedBezier = ({
+  start,
+  mid,
+  end,
+  color,
+  width,
+  dashed
+}: {
+  start: [number, number, number];
+  mid: [number, number, number];
+  end: [number, number, number];
+  color: string;
+  width: number;
+  dashed?: boolean;
+}) => {
+  const lineRef = useRef<any>(null);
+  useFrame((state) => {
+    if (dashed && lineRef.current && lineRef.current.material) {
+      const mat = lineRef.current.material;
+      mat.dashOffset = (mat.dashOffset || 0) - state.clock.getDelta() * 0.5;
+    }
+  });
+  return (
+    <QuadraticBezierLine
+      ref={lineRef}
+      start={start}
+      end={end}
+      mid={mid}
+      color={color}
+      lineWidth={width}
+      dashed={!!dashed}
+      dashScale={1}
+      dashSize={0.2}
+      gapSize={0.2}
+      transparent
+      opacity={0.9}
+    />
   );
 };
 

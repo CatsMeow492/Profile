@@ -56,7 +56,7 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
 
   return (
     <Card className="project-card group" variant="default">
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full p-6">
         {/* Header */}
         <div className="flex flex-col gap-3 mb-4">
           <div className="flex items-start justify-between gap-3">
