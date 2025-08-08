@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Text, OrbitControls, Sphere, Line, Html, Float, GradientTexture, QuadraticBezierLine } from '@react-three/drei';
 import * as THREE from 'three';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { useLazyLoad } from '@/hooks/useIntersectionObserver';
 import { 
   Section, 
   Card,
@@ -18,6 +20,9 @@ import {
 import { research } from '@/content';
 import type { Research } from '@/types/content';
 import { cn } from '@/lib/utils';
+
+// Lazy-load the 3D network to reduce initial JS
+const ResearchNetwork3D = dynamic(() => import('./ResearchNetwork3D').then(m => m.ResearchNetwork3D), { ssr: false });
 
 // AI Research Assistant Chat Interface
 interface ChatMessage {
@@ -285,7 +290,7 @@ const ResearchNetworkNode = ({
   );
 };
 
-const ResearchNetwork3D = ({ 
+const LegacyResearchNetwork3D = ({ 
   selectedPaper, 
   onPaperSelect 
 }: { 
@@ -1034,28 +1039,10 @@ export const ResearchSection = () => {
         {/* Main Content Area */}
         <div className="relative">
           {viewMode === '3d' && (
-            <motion.div 
-              className="h-[600px] bg-card/20 backdrop-blur-sm border border-border rounded-xl overflow-hidden"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Suspense fallback={
-                <div className="h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-muted-foreground">Loading 3D Research Network...</p>
-                  </div>
-                </div>
-              }>
-                <Canvas camera={{ position: [0, 0, 15], fov: 60 }}>
-                  <ResearchNetwork3D 
-                    selectedPaper={selectedPaper} 
-                    onPaperSelect={handlePaperSelect}
-                  />
-                </Canvas>
-              </Suspense>
-            </motion.div>
+            <Lazy3DContainer
+              selectedPaper={selectedPaper}
+              onPaperSelect={handlePaperSelect}
+            />
           )}
 
           {viewMode === 'timeline' && (
@@ -1229,3 +1216,39 @@ export const ResearchSection = () => {
     </div>
   );
 }; 
+
+// Lazy container for viewport-gated 3D network
+const Lazy3DContainer = ({ selectedPaper, onPaperSelect }: { selectedPaper: string | null; onPaperSelect: (id: string) => void }) => {
+  const { ref, shouldLoad } = useLazyLoad({ rootMargin: '200px', threshold: 0.1, triggerOnce: true });
+  return (
+    <motion.div 
+      ref={ref as any}
+      className="h-[600px] bg-card/20 backdrop-blur-sm border border-border rounded-xl overflow-hidden"
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      {!shouldLoad ? (
+        <div className="h-full flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Preparing 3D Research Network...</p>
+          </div>
+        </div>
+      ) : (
+        <Suspense fallback={
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading 3D Research Network...</p>
+            </div>
+          </div>
+        }>
+          <Canvas camera={{ position: [0, 0, 15], fov: 60 }} dpr={[1, 2]}>
+            <ResearchNetwork3D selectedPaper={selectedPaper} onPaperSelect={onPaperSelect} />
+          </Canvas>
+        </Suspense>
+      )}
+    </motion.div>
+  );
+};

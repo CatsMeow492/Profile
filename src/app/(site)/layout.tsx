@@ -8,6 +8,7 @@ import { generateMetadata as generateSEOMetadata } from '@/lib/seo';
 import { SEOAudit } from '@/components/seo/SEOAudit';
 import { SEOReport } from '@/components/seo/SEOReport';
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
+import { WebVitalsReporter } from '@/components/analytics/WebVitalsReporter';
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider';
 import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard';
 import { FinalTestingSuite } from '@/components/testing/FinalTestingSuite';
@@ -35,6 +36,9 @@ export default function SiteLayout({
 
             {/* Main content */}
             <main className="w-full">{children}</main>
+
+            {/* Web Vitals */}
+            <WebVitalsReporter />
 
             {/* Footer */}
             <footer className="bg-muted border-t border-border">

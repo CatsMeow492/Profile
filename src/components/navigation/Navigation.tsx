@@ -42,6 +42,10 @@ export const Navigation = () => {
           
           if (scrollPosition >= sectionTop - 200) {
             setActiveSection(section.id);
+            // Update URL hash without scrolling
+            if (window.history && window.location.hash !== `#${section.id}`) {
+              window.history.replaceState(null, '', `#${section.id}`);
+            }
             break;
           }
         }

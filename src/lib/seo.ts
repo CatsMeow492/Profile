@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 // SEO Configuration
 export const seoConfig = {
   siteName: 'Taylor Mohney - Research Scientist & Software Engineer',
-  siteUrl: 'https://taylormohney.com', // Update with actual domain
+  siteUrl: 'https://www.youngmohney.com',
   author: 'Taylor Mohney',
   description: 'Research Scientist and Software Engineer specializing in machine learning, quantization theory, and scalable software systems. PhD researcher with expertise in LoRA fine-tuning, neural network optimization, and enterprise software development.',
   keywords: [
@@ -68,7 +68,7 @@ export const generatePersonStructuredData = () => {
       `https://linkedin.com/in/${seoConfig.social.linkedin}`,
       `https://github.com/${seoConfig.social.github}`,
     ],
-    image: `${seoConfig.siteUrl}/images/profile.jpg`, // Update with actual image
+    image: `${seoConfig.siteUrl}/profilePic.jpeg`,
     email: seoConfig.social.email,
   };
 };
@@ -104,7 +104,7 @@ export const generateResearchStructuredData = () => {
 export const generateMetadata = ({
   title,
   description = seoConfig.description,
-  image = `${seoConfig.siteUrl}/images/og-image.jpg`,
+  image = `${seoConfig.siteUrl}/vercel.svg`,
   url = seoConfig.siteUrl,
   type = 'website',
 }: {

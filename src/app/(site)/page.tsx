@@ -51,6 +51,7 @@ export default function HomePage() {
     <>
       {/* Structured Data for SEO */}
       <StructuredData type="person" />
+      <StructuredData type="research" />
       
       <HeroSection />
       <Suspense fallback={<SectionSkeleton />}>
