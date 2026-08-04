@@ -55,7 +55,7 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
   const hasLongDescription = project.longDescription && project.longDescription !== project.description;
 
   return (
-    <Card className="project-card group" variant="default">
+    <Card className="project-card group h-full" variant="default">
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="flex flex-col gap-3 mb-4">
@@ -80,12 +80,17 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
           </div>
         </div>
 
-        {/* Description */}
-        <div className="flex-1 mb-4">
+        {/* Description.
+            `flex-1` used to live on THIS block, so it soaked up every spare pixel in the card and
+            opened a large empty gap between "Read more" and the technology chips on any card with a
+            short description (BrandBeacon and the portfolio card were the worst). The growth now
+            belongs to the spacer above the footer, so descriptions sit directly under the header and
+            the footers line up across a row. */}
+        <div className="mb-4">
           <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-3">
             {description}
           </p>
-          
+
           {hasLongDescription && (
             <button
               onClick={() => setShowFullDescription(!showFullDescription)}
@@ -116,15 +121,21 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
             <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100 mb-2">
               Key Achievements
             </h4>
-            <ul className="space-y-1">
+            <ul className="space-y-1.5">
               {project.achievements.slice(0, 3).map((achievement, index) => (
-                <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                  <span className="text-green-500 mt-1.5 flex-shrink-0">•</span>
+                <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2.5">
+                  {/* A text bullet inherited the line-height of the row and sat at a different
+                      height on every wrapped line. A fixed-size dot nudged to the cap height of the
+                      first line stays put regardless of how the text wraps. */}
+                  <span
+                    aria-hidden
+                    className="mt-[0.4rem] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500"
+                  />
                   <span className="leading-relaxed">{achievement}</span>
                 </li>
               ))}
               {project.achievements.length > 3 && (
-                <li className="text-sm text-gray-500 dark:text-gray-500 italic">
+                <li className="text-sm text-gray-500 dark:text-gray-500 italic pl-4">
                   +{project.achievements.length - 3} more achievements
                 </li>
               )}
@@ -132,8 +143,12 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
           </div>
         )}
 
+        {/* Everything below is pinned to the bottom of the card, so footers align across a row
+            even though descriptions and achievement lists differ in length. */}
+        <div className="mt-auto" />
+
         {/* Footer Links */}
-        <div className="flex flex-wrap gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-3 border-t border-gray-200 dark:border-gray-700">
           {project.githubUrl && (
             <ExternalLink
               href={project.githubUrl}
@@ -157,11 +172,12 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
               Live Demo
             </ExternalLink>
           )}
-        </div>
 
-        {/* Date range */}
-        <div className="mt-2 text-xs text-gray-500 dark:text-gray-500">
-          {project.startDate} {project.endDate ? `- ${project.endDate}` : '- Present'}
+          {/* The date used to sit in its own block below the bordered footer, which read as a
+              detached orphan line. It belongs on the footer row, pushed to the right. */}
+          <span className="ml-auto text-xs text-gray-500 dark:text-gray-500">
+            {project.startDate} {project.endDate ? `- ${project.endDate}` : '- Present'}
+          </span>
         </div>
       </div>
     </Card>
@@ -244,7 +260,7 @@ export const ProjectsSection = () => {
 
         {/* Category Filter */}
         <div className="flex flex-wrap gap-2 justify-center">
-          {categories.map((category) => (
+          {categories.filter((category) => category.count > 0).map((category) => (
             <button
               key={category.value}
               onClick={() => setSelectedCategory(category.value)}
