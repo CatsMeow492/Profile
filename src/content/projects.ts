@@ -86,49 +86,6 @@ export const projects: Project[] = [
     ]
   },
   {
-    id: 'ml-optimization-dashboard',
-    name: 'ML Optimization Dashboard',
-    description: 'Real-time monitoring and optimization dashboard for machine learning model performance',
-    longDescription: `Interactive web application for monitoring ML model performance, tracking quantization effects, 
-                      and optimizing inference pipelines. Features real-time metrics, automated alerts, and 
-                      performance visualization tools. Deployed across multiple production environments.`,
-    technologies: ['TypeScript', 'React', 'D3.js', 'Node.js', 'Express', 'PostgreSQL', 'Redis', 'Docker'],
-    githubUrl: 'https://github.com/CatsMeow492/ml-optimization-dashboard',
-    liveUrl: 'https://ml-dashboard-demo.vercel.app',
-    startDate: '2022-08',
-    endDate: '2023-02',
-    status: 'completed',
-    featured: true,
-    category: 'web-app',
-    achievements: [
-      'Reduced model debugging time by 70% for development teams',
-      'Handles 1M+ inference requests per day monitoring',
-      'Adopted by 3 major tech companies for production use',
-      'Winner of Best Demo Award at MLSys 2023 conference'
-    ]
-  },
-  {
-    id: 'federated-learning-framework',
-    name: 'Privacy-First Federated Learning',
-    description: 'Federated learning framework with built-in differential privacy and quantization support',
-    longDescription: `A production-ready federated learning framework that combines model quantization with 
-                      differential privacy guarantees. Supports heterogeneous client environments and provides 
-                      formal privacy analysis tools. Designed for healthcare and financial applications.`,
-    technologies: ['Python', 'TensorFlow', 'gRPC', 'Kubernetes', 'Docker', 'Prometheus', 'Grafana'],
-    githubUrl: 'https://github.com/CatsMeow492/federated-learning-privacy',
-    startDate: '2021-10',
-    endDate: '2022-06',
-    status: 'completed',
-    featured: true,
-    category: 'library',
-    achievements: [
-      'Successfully deployed in 2 healthcare research studies',
-      'Formal privacy audit passed by independent security firm',
-      'Open-sourced with Apache 2.0 license, 300+ stars',
-      'Featured in ICLR 2022 privacy workshop'
-    ]
-  },
-  {
     id: 'portfolio-website',
     name: 'Professional Portfolio Website',
     description: 'Modern, responsive portfolio website built with Next.js 15 and TypeScript',

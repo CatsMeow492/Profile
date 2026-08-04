@@ -282,7 +282,7 @@ export const ResearchSection = () => {
               {research.length}
             </div>
             <div className="text-sm text-muted-foreground">
-              Total Publications
+              Papers &amp; Preprints
             </div>
           </CardContent>
         </Card>
@@ -290,10 +290,10 @@ export const ResearchSection = () => {
         <Card>
           <CardContent className="p-6 text-center">
             <div className="text-3xl font-bold text-primary mb-2">
-              {publishedPapers.length}
+              {research.filter(p => (p.pdfUrl || '').includes('github.com')).length}
             </div>
             <div className="text-sm text-muted-foreground">
-              Published Papers
+              With Public Code
             </div>
           </CardContent>
         </Card>
