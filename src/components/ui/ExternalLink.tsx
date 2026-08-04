@@ -81,8 +81,11 @@ const ExternalLinkIcon = ({ className }: ExternalLinkIconProps) => (
 );
 
 // Social link component for specific platforms
-interface SocialLinkProps extends Omit<ExternalLinkProps, 'showIcon'> {
+// `children` is optional: the icon comes from `platform`, and the accessible name falls back to a
+// label derived from `platform`. Callers only pass children to override that label.
+interface SocialLinkProps extends Omit<ExternalLinkProps, 'showIcon' | 'children'> {
   platform: 'github' | 'linkedin' | 'twitter' | 'email' | 'scholar' | 'orcid';
+  children?: React.ReactNode;
 }
 
 const SocialLink = ({ platform, className, ...props }: SocialLinkProps) => {
@@ -131,13 +134,21 @@ const SocialLink = ({ platform, className, ...props }: SocialLinkProps) => {
     }
   };
 
+  // Callers passed an <span className="sr-only">GitHub</span> as children for the accessible name,
+  // but this component overwrote children with the icon, so the label never rendered and the links
+  // reached production with NO accessible name at all. A screen reader announced them as bare URLs.
+  // The icon is aria-hidden, so the sr-only text below is the only name these links have.
+  const { children, ...rest } = props;
+  const label = platform.charAt(0).toUpperCase() + platform.slice(1);
+
   return (
     <ExternalLink
       showIcon={false}
       className={cn('hover:text-primary transition-colors', className)}
-      {...props}
+      {...rest}
     >
       {getSocialIcon(platform)}
+      <span className="sr-only">{children ?? label}</span>
     </ExternalLink>
   );
 };

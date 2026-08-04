@@ -3,11 +3,11 @@
 import { Container } from '@/components/ui/Container';
 import { experiences } from '@/content';
 import type { Experience } from '@/types/content';
-import { motion, useScroll, useSpring } from 'framer-motion';
+import { motion, useScroll, useSpring, type MotionValue } from 'framer-motion';
 import { useRef } from 'react';
 
 // Helper component for animated timeline line
-const TimelineProgress = ({ scrollYProgress }: { scrollYProgress: any }) => {
+const TimelineProgress = ({ scrollYProgress }: { scrollYProgress: MotionValue<number> }) => {
   const scaleY = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
@@ -133,7 +133,7 @@ export const ExperienceSection = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed mt-4"
           >
-            My journey through various roles in software engineering and research, building innovative solutions and advancing the field of machine learning optimization.
+            Ten years building production software across defense, government, fintech, consumer hardware and early-stage startups.
           </motion.p>
         </div>
 

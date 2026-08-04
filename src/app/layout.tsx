@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { seoConfig } from "@/lib/seo";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,37 +13,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Metadata lives in ONE place: src/lib/seo.ts, consumed by src/app/(site)/layout.tsx.
+// This file used to declare a second, competing metadata block with a different title, a different
+// description and no metadataBase at all. Two sources of truth for the same tags is how the title
+// and the OG title drifted apart.
+//
+// metadataBase stays here because routes OUTSIDE the (site) group (notably /_not-found) inherit
+// only the root layout. Without it those routes resolve relative OG/Twitter image URLs against
+// http://localhost:3000, which is what the build warned about. Every other tag is set downstream.
 export const metadata: Metadata = {
-  title: "Taylor Mohney | Software Engineer & Researcher",
-  description: "Professional portfolio showcasing software engineering expertise and research contributions in quantization theory and machine learning optimization",
-  keywords: ["software engineer", "researcher", "machine learning", "quantization", "portfolio", "Taylor Mohney"],
-  authors: [{ name: "Taylor Mohney" }],
-  creator: "Taylor Mohney",
-  publisher: "Taylor Mohney",
-  openGraph: {
-    title: "Taylor Mohney | Professional Portfolio",
-    description: "Software Engineer & Researcher specializing in machine learning optimization",
-    url: "https://youngmohney.com",
-    siteName: "Taylor Mohney Portfolio",
-    type: "website",
-    locale: "en_US",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Taylor Mohney | Software Engineer & Researcher",
-    description: "Professional portfolio showcasing software engineering expertise and research contributions",
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
+  metadataBase: new URL(seoConfig.siteUrl),
 };
 
 export const viewport: Viewport = {

@@ -57,7 +57,7 @@ export default async function OpenGraphImage() {
               lineHeight: 1.2,
             }}
           >
-            Research Scientist & Software Engineer
+            Senior Software Engineer
           </div>
           <div
             style={{
@@ -68,7 +68,7 @@ export default async function OpenGraphImage() {
               lineHeight: 1.3,
             }}
           >
-            Machine Learning • Neural Networks • Enterprise Software
+            AI & ML Products • TypeScript • Python • Go
           </div>
         </div>
         <div
@@ -80,7 +80,7 @@ export default async function OpenGraphImage() {
             color: '#6b7280',
           }}
         >
-          taylormohney.com
+          www.youngmohney.com
         </div>
       </div>
     ),

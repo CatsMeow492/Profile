@@ -76,9 +76,10 @@ export const useSectionTracking = (sectionName: string) => {
       observer.observe(sectionRef.current);
     }
 
+    const observed = sectionRef.current;
     return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
+      if (observed) {
+        observer.unobserve(observed);
       }
       observer.disconnect();
     };
@@ -96,7 +97,6 @@ export const useClickTracking = () => {
     label?: string
   ) => {
     const target = event.currentTarget as HTMLElement;
-    const finalAction = action || 'click';
     const finalLabel = label || target.textContent || target.getAttribute('aria-label') || 'unknown';
 
     portfolioEvents.clickNavigation(`${category}_${finalLabel}`);
@@ -183,8 +183,9 @@ export const usePerformanceTracking = () => {
       let clsValue = 0;
       const clsObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (!(entry as any).hadRecentInput) {
-            clsValue += (entry as any).value;
+          const shift = entry as PerformanceEntry & { hadRecentInput?: boolean; value?: number };
+          if (!shift.hadRecentInput) {
+            clsValue += shift.value ?? 0;
           }
         }
         portfolioEvents.performanceMetric('CLS', clsValue);
@@ -228,7 +229,7 @@ export const useErrorTracking = () => {
 };
 
 // Utility function for throttling
-function throttle<T extends (...args: any[]) => any>(func: T, delay: number): T {
+function throttle<T extends (...args: never[]) => unknown>(func: T, delay: number): T {
   let timeoutId: NodeJS.Timeout | null = null;
   let lastExecTime = 0;
   

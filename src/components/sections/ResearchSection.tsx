@@ -205,8 +205,8 @@ export const ResearchSection = () => {
   return (
     <Section
       id="research"
-      title="Research & Publications"
-      description="My academic research focusing on neural network quantization, parameter-efficient fine-tuning, and optimization techniques for large language models."
+      title="Research & Writing"
+      description="Independent write-ups on neural network quantization and parameter-efficient fine-tuning. Each one links to a public repository with the code and data behind it."
     >
       {/* Category Filter */}
       <CategoryFilter 
@@ -223,7 +223,7 @@ export const ResearchSection = () => {
             <h3 className="text-2xl font-semibold text-foreground mb-6 text-center">
               Published Research
             </h3>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className={cn('grid gap-6', publishedPapers.length > 1 ? 'grid-cols-1 lg:grid-cols-2' : 'mx-auto max-w-3xl grid-cols-1')}>
               {publishedPapers.map((paper) => (
                 <ResearchCard key={paper.id} paper={paper} />
               ))}
@@ -237,7 +237,7 @@ export const ResearchSection = () => {
             <h3 className="text-2xl font-semibold text-foreground mb-6 text-center">
               Preprints & Working Papers
             </h3>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className={cn('grid gap-6', preprintPapers.length > 1 ? 'grid-cols-1 lg:grid-cols-2' : 'mx-auto max-w-3xl grid-cols-1')}>
               {preprintPapers.map((paper) => (
                 <ResearchCard key={paper.id} paper={paper} />
               ))}
@@ -251,7 +251,7 @@ export const ResearchSection = () => {
             <h3 className="text-2xl font-semibold text-foreground mb-6 text-center">
               Research in Progress
             </h3>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className={cn('grid gap-6', draftPapers.length > 1 ? 'grid-cols-1 lg:grid-cols-2' : 'mx-auto max-w-3xl grid-cols-1')}>
               {draftPapers.map((paper) => (
                 <ResearchCard key={paper.id} paper={paper} />
               ))}
@@ -265,7 +265,7 @@ export const ResearchSection = () => {
             <h3 className="text-2xl font-semibold text-foreground mb-6 text-center">
               Under Review
             </h3>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className={cn('grid gap-6', inReviewPapers.length > 1 ? 'grid-cols-1 lg:grid-cols-2' : 'mx-auto max-w-3xl grid-cols-1')}>
               {inReviewPapers.map((paper) => (
                 <ResearchCard key={paper.id} paper={paper} />
               ))}
