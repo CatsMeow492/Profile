@@ -2,6 +2,28 @@ import { Experience } from '@/types/content';
 
 export const experiences: Experience[] = [
   {
+    id: 'principal-engineer-kindly-robotics',
+    company: 'Kindly Robotics',
+    role: 'Principal Engineer',
+    location: 'Remote',
+    startDate: '2025-06',
+    // no endDate: current position
+    duration: 'June 2025 - Present',
+    description: 'Building agentic developer tooling for robotics engineers, including an LLM-powered IDE and a multi-agent robot configuration framework.',
+    achievements: [
+      'Kindly IDE, an agentic IDE for robotics engineers: shipped an LLM-powered development environment purpose-built for robotics, with chat-over-codebase awareness of URDF, ROS launch files and calibration packs, inline config completions, and an agent mode that scaffolds and validates whole robot configurations end to end',
+      'Architected a planner/generator/validator agent graph that turns a natural-language spec (e.g. "6-DOF arm with gripper for pick-and-place at station 4") into a validated configuration covering URDF, launch files and calibration, cycled through a simulation-in-the-loop verifier before the engineer ever sees it, turning days of manual config into minutes',
+      'Built a RAG pipeline over internal design docs, past customer configs and manufacturer specs so IDE suggestions are grounded in what the team has actually shipped rather than what the base model guessed, with citation surfacing so engineers can trust but verify',
+      'Set up a production eval harness that replays real engineer tasks against each model version, scoring compile-pass rate, simulation success and engineer override rate, catching regressions before they reach users',
+      'Partnered with defense contractors to embed ML pipelines for predictive maintenance, anomaly detection and adaptive process control into existing production workflows, enabling real-time operational visibility and lower defect rates at scale'
+    ],
+    technologies: [
+      'TypeScript', 'Python', 'Go', 'LLM Agents', 'RAG', 'ROS', 'URDF', 'Kubernetes', 'Docker', 'Model Evals'
+    ],
+    impact: 'Robot configuration work that took days of manual effort now lands in minutes',
+    companyUrl: 'https://kindly.fyi'
+  },
+  {
     id: 'lead-fullstack-dod',
     company: 'Department of Defense',
     role: 'Lead Full Stack Developer',

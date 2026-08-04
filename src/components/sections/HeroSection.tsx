@@ -96,7 +96,7 @@ export const HeroSection = () => {
         
         <FloatingCard className="absolute bottom-32 left-20 w-52 hidden xl:block" delay={1000}>
           <div className="text-sm text-white/80">Latest achievement</div>
-          <div className="text-lg font-semibold text-white mt-1">DoD Video Conferencing</div>
+          <div className="text-lg font-semibold text-white mt-1">Agentic IDE for Robotics</div>
         </FloatingCard>
       </div>
       
@@ -239,7 +239,7 @@ export const HeroSection = () => {
                 {/* Floating Achievement Badge */}
                 <div className="absolute -bottom-6 -right-6 bg-green-500 text-white px-6 py-3 rounded-xl shadow-2xl border-4 border-white/20 backdrop-blur-sm">
                   <div className="text-xs font-medium text-green-100">Latest Role</div>
-                  <div className="text-sm font-bold">DoD Lead Developer</div>
+                  <div className="text-sm font-bold">Principal Engineer, Kindly Robotics</div>
                 </div>
               </div>
             </div>
